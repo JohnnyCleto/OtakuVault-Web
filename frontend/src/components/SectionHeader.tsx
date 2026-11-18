@@ -1,0 +1,2 @@
+import{Link}from'react-router-dom';import{ArrowRight}from'lucide-react';import type{ReactNode}from'react';
+export default function SectionHeader({icon,title,subtitle,to}:{icon?:ReactNode;title:string;subtitle?:string;to?:string}){return <div className="section-header"><div><span className="eyebrow">{subtitle||'OTAKUVAULT'}</span><h2>{icon} {title}</h2></div>{to&&<Link className="section-link" to={to}>Ver todos <ArrowRight size={16}/></Link>}</div>}

@@ -1,0 +1,2 @@
+export class ApiError extends Error{constructor(message:string,public status:number){super(message);this.name='ApiError'}}
+export async function api<T=any>(path:string,options:RequestInit={}):Promise<T>{const response=await fetch('/api'+path,{...options,credentials:'include',headers:{'Content-Type':'application/json',...options.headers}});let data:any=null;try{data=await response.json()}catch{/* HTTP sem JSON */}if(!response.ok)throw new ApiError(data?.error||`Erro HTTP ${response.status}`,response.status);return data as T}

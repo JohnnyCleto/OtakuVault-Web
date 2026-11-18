@@ -1,0 +1,2 @@
+import React from 'react';import{createRoot}from'react-dom/client';import{BrowserRouter}from'react-router-dom';import App from'./App';import{AuthProvider}from'./contexts/AuthContext';import{SettingsProvider}from'./contexts/SettingsContext';import{LibraryProvider}from'./contexts/LibraryContext';import'./style.css';
+createRoot(document.getElementById('root')!).render(<React.StrictMode><BrowserRouter><AuthProvider><SettingsProvider><LibraryProvider><App/></LibraryProvider></SettingsProvider></AuthProvider></BrowserRouter></React.StrictMode>);

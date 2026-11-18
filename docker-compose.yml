@@ -1,0 +1,61 @@
+services:
+  frontend:
+    build: ./frontend
+    ports: ["5173:80"]
+    depends_on:
+      backend: {condition: service_healthy}
+  backend:
+    build: ./backend
+    env_file: .env
+    environment:
+      PORT: 3001
+      MYSQL_HOST: mysql
+      # Padrões de desenvolvimento: funcionam mesmo com um .env antigo.
+      # Configure SMTP_HOST/SMTP_PORT reais no .env ao publicar em produção.
+      SMTP_HOST: ${SMTP_HOST:-mailpit}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      MONGO_URL: mongodb://${MONGO_INITDB_ROOT_USERNAME}:${MONGO_INITDB_ROOT_PASSWORD}@mongo:27017/otakuvault?authSource=admin
+    depends_on:
+      mysql: {condition: service_healthy}
+      mongo: {condition: service_healthy}
+      mailpit: {condition: service_started}
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      start_period: 30s
+      retries: 12
+  # Correio local para desenvolvimento (não envia mensagens para Gmail/Outlook).
+  # A interface web fica limitada ao próprio computador.
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "127.0.0.1:8025:8025"
+    restart: unless-stopped
+  mysql:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      retries: 30
+  mongo:
+    image: mongo:7
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+    volumes: ["mongo_data:/data/db"]
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      retries: 30
+volumes:
+  mysql_data:
+  mongo_data:

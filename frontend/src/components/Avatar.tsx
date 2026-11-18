@@ -1,0 +1,2 @@
+import{UserRound}from'lucide-react';import{useAuth}from'../contexts/AuthContext';
+export default function Avatar({size=54}:{size?:number}){const{me}=useAuth();return <span className="avatar-ring" style={{width:size,height:size}}>{me?.avatar?<img src={me.avatar} alt="Foto do perfil"/>:me?.name?<span className="avatar-initial">{me.name.charAt(0).toUpperCase()}</span>:<UserRound size={size*.45}/>}</span>}
